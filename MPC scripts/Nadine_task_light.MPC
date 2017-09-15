@@ -1,0 +1,1030 @@
+\ Copyright (C) 2011 MED Associates, All rights reserved.
+
+\ Odor Maze_v5.mpc
+\
+\ 9/13/2010
+\ Written for: Genela Morris, PhD
+\              Dept. of Neurobiology and Ethology
+\              Haifa University
+\              Mount Carmel, Haifa 31905
+\              Isreal
+\              Ph: +972-4-8288425
+\              Fx: +972-4-8240339
+\              Email: gmorris@sci.haifa.ac.il
+\
+\ The Animal starts in the central hub with all doors closed.  When the START
+\ command is issued the program times the Inter-Trial Interval (ITI).  At the
+\ end of the ITI if the Arm Selection type is Random, then the program randomly
+\ selects the correct arm and incorrect arm and then turns on the odors and/or
+\ the chosen LED's for the selected arms.  If the Arm Selection type is
+\ Sequenced, then the program draws one value from both Lists X & Y in order and
+\ then turns on the odors and/or the chosen LED's for the selected arms.  If
+\ both arms are correct and the Arm Selection type is Sequenced, then the
+\ program draws two values from List X.  The doors are opened manually by the
+\ experimenter at this time.
+\
+\ The ITI value will be a randomly generated number that is between the Minimum
+\ ITI and Maximum ITI values.  If the Minimum ITI and Maximum ITI values are the
+\ same, then the ITI value will be fixed.
+\
+\ The trial stimuli may consist of just odors, just LEDs, or both odors and
+\ LEDs.  One or both of the arms can be correct.  The correct signal can be
+\ either the LEDs or the odors.  If both arms are correct and only one stimuli
+\ is selected, then the correct stimuli will be presented at both arms.  If both
+\ arms are correct and both stimuli are to be presented, then the correct
+\ stimuli will be presented at both arms, but the incorrect stimuli will still
+\ have both a correct and incorrect arm.  The stimuli (lights and/or odors) will
+\ stay on until the Stimuli Presentation Length has been reached or the Animal
+\ has entered the arm, whichever comes first.
+\
+\ Once the stimuli is turned on the program waits until an input is detected on
+\ one of the first runway beams.  If the Animal fails to break one of the
+\ entrance beams in the Maximum Stimuli Reaction Time, then a Movement Error is
+\ recorded and the Trial is ended.
+\
+\ Once the first runway beam is broken the Stimulus Reaction Time is recorded.
+\ The Animal must now move down the runway and break the second beam in the
+\ Maximum Arm Response Time.  If the Animal fails to break the second beam in
+\ the specified amount of time, then an Incomplete Trial is recorded and the
+\ Trial is ended.
+\
+\ If the Allow Explorations option is set to yes, then each time a entrance beam
+\ is detected in a different arm than the last entrance beam, the Maximum Arm
+\ Response Time timer will be reset to zero.
+\
+\ If the Animal breaks both beams in the specified amount of time, then the Arm
+\ Response Time will be recorded.  If the Animal breaks both beams in the
+\ specified amount of time and has chosen the correct arm, then it will receive
+\ its reward.  If the Animal breaks both beams in the specified amount of time
+\ and has chosen the incorrect arm, then no reward will be given.  In either
+\ case the Trial has ended.
+\
+\ The Animal must now be moved back to the hub and the doors.  If the Trial
+\ Succession is Automatic, then the next Trial will begin with another ITI
+\ immediately.  If the Trial Succession is Manual, then the next Trial will
+\ begin with another ITI when a K1-pulse is issued.
+\
+\ The Trial will end when one of the following conditions has been met:
+\ 1) The Animal has failed to break an Entrance Beam in the specified Maximum
+\    Stimuli Reaction Time (Move Error).
+\ 2) The Animal has failed to break an End Beam in the specified Maximum Arm
+\    Reaction Time (Trial Incomplete).
+\ 3) The Animal has broken an End Beam (either Correct or Incorrect) and/or
+\    received its reward.
+\ 4) The Maximum Trial Length has been reached.
+\
+\ Several outputs are reserved for sending informaton to an external data
+\ acquisition device.  When a certain event happens (stimuli turned on, nose
+\ poke, IR beam 1 or 2 break, reward delivered, ITI start) the appropriate
+\ output (25 - 40) will be turned on for the length of the event.  Nose pokes
+\ and IR beams will be pulsed on for 10ms (0.01") only.
+\
+\
+\ 6-1-2011
+\ * If the Animal fails to break one of the entrance beams, the Stimuli Reaction
+\   Time is now recorded as 0.
+\ * If the Animal fails to break the second beam, the Arm Response Time is now
+\   recorded as 0.
+\ * When the Allow Explorations mode is selected the program was recording the
+\   Stimuli Reaction Time as the time of the first entrance beam break and not
+\   the last entrance beam break.  Corrected.
+\   This change does mean it is possible to record a Stimuli Reaction Time that
+\   is longer than the Maximum Stimuli Reaction Time.  For example the Maximum
+\   Stimuli Reaction Time is set to 60s.  The animal breaks the first entrance
+\   beam at 45s.  20s later the animal breaks an entrance beam in a different
+\   arm.  The Stimuli Reaction Time would be recorded as 65s.
+\   Program no longer waits for the Trial Length Timer to end when the Animal
+\   completes the Trial or there is a Movement Error.  Instead the ITI is
+\   started immediately for Automatic Trial Succession or the program waits
+\   for the K1-pulse for Manual Trial Succession.
+
+\ 3-1-2012
+\changes by YZ
+\In this procedure no light is set.
+\ Each time a correct arm is chosen and an odor (the correct odor that will appear in the final paradigm)
+\ appears in the nose poke of that arm. then the door of that arm will open, and the rat will get reward at its end.
+
+\ 21-3-2013
+\changes by YZ
+\added light (yellow, not used in the main paradigm) that will set up in the chosen arm.
+
+\ 27-8-2013
+\changes by YZ
+\to teach the rat to do NP: one arm is chosen for each paradigm
+\(the user set: list X = only the desired arm instead of 1 2 3 4).
+\Other arms are closed and their NS holes are blocked.
+\the animal starts at central hub.
+\long alerton at beginning.
+\at beginning, yellow light+odor are set. they will stay on for all experiment duration.
+\when the animal will make a NP, reward is given.
+\note that any nose poke will activate the reward at correct arm (if correct arm is 4, then NP at arm 4 will activate reward at arm 4,
+\but also NP at arms 1, 2 or 3 will activate reward at arm 4 (because there's no way to differentiate between NP in the program).
+\therefore other NP should be physically blocked.
+
+\ 22-7-2013
+\changes by YZ
+\to teach the rat to do NP using bips, still with manual transfer between trials:
+\one arm is chosen for each paradigm
+\(the user set: list X = only the desired arm instead of 1 2 3 4).
+\Other arms are closed and their NS holes are blocked.
+\the animal starts at central hub.
+\at beginning of trial, odor is set on. 3 sec later, a bip is played and blue light is turned on
+\(light is on for 10sec+ the 3 sec of odor =13).
+\when the animal will make a NP *** that is after the bip***,
+\reward is given. NPs before the bip will not be given reward.
+\trial ends in 2 possible ways: 1) animal reaching end of arm (either if NP was done or not) 2) trial time has passed (which is 30sec)
+\note that any nose poke will activate the reward at correct arm (if correct arm is 4, then NP at arm 4 will activate reward at arm 4,
+\but also NP at arms 1, 2 or 3 will activate reward at arm 4 (because there's no way to differentiate between NP in the program).
+\therefore other NP should be physically blocked.
+\ when trial ends, the program waits ITI before starting another trial.
+
+\ 27-8-2013
+\changes by YZ
+\ simple choosing between 2 arms paradigm:
+\ each rat works with fixed 2 arms.
+\ in each trial one of these 2 arms will present a correct odor, and the other arm
+\ will present an incorrect odor. (define the 2 arms in both LIST X).
+\ in addition, one randomly arm will show a yellow light and the other will show green light.
+\ Lights will be displayed when the bip sound is played.
+\ reward will be given if the correct arm was chosen, but only after the bip was played!
+
+
+\07-01-14
+\changes by YZ
+\correct color is actually 2 colors concurrently: blue+yellow.
+\incorrect color is green alone
+
+\30-09-14
+\changes by YZ
+\ using only three arms (since NP of arm 4 isn't working) - arms 1,2,3
+
+\07-01-15
+\changes by YZ
+\we decided we want lights to appear as early as odors are released, even before they arrive to nosepokes.
+
+\14-01-15
+\changes by YZ
+\ save irrelevant parameters in D array
+
+\ First or A Beams (closest to Hub) connected to Inputs 5 - 8.
+\ Second or B Beams (next Beam in) connected to Inputs 9 - 12.
+\ Inputs 1,5,9 go to Runway 1, Inputs 2,6,10 to Runway 2, etc.
+
+\ Inputs
+\ SmartCtrl Card
+^Arm1_NP = 1
+^Arm2_NP = 2
+^Arm3_NP = 3
+^Arm4_NP = 4
+
+\ SuperPort Input Card
+\ Constants for First Runway Beams
+^Arm1_A = 5
+^Arm2_A = 6
+^Arm3_A = 7
+^Arm4_A = 8
+
+\ Constants for Second Runway Beams
+^Arm1_B = 9
+^Arm2_B = 10
+^Arm3_B = 11
+^Arm4_B = 12
+
+\ Outputs
+\ SmartCtrl Card
+^Arm1_Reward = 1
+^Arm2_Reward = 2
+^Arm3_Reward = 3
+^Arm4_Reward = 4
+^Arm1_Odor1  = 5
+^Arm1_Odor2  = 6
+^Arm2_Odor1  = 7
+^Arm2_Odor2  = 8
+
+\ SuperPort Output Card 1
+^Arm3_Odor1  = 9
+^Arm3_Odor2  = 10
+^Arm4_Odor1  = 11
+^Arm4_Odor2  = 12
+^Arm1_Blue   = 13
+^Arm1_Yellow = 14
+^Arm1_Green  = 15
+^Arm2_Blue   = 16
+^Arm2_Yellow = 17
+^Arm2_Green  = 18
+^Arm3_Blue   = 19
+^Arm3_Yellow = 20
+^Arm3_Green  = 21
+^Arm4_Blue   = 22
+^Arm4_Yellow = 23
+^Arm4_Green  = 24
+
+\ SuperPort Output Card 2
+\ To Data Acquisition Computer
+                 \ StimCode3, StimCode2, and StimCode1 are used to indicate
+                 \ that the stimulus for the Correct Arm 1 is turned on.
+                 \ StimCode3 = Most Significant, StimCode1 = Least Significant.
+^StimCode1 = 25  \ 000 = No Stim Turned On
+^StimCode2 = 26  \ 001 = Arm 1 Stim On, 010 = Arm 2 Stim On
+^StimCode3 = 27  \ 011 = Arm 3 Stim On, 100 = Arm 4 Stim On
+
+                 \ StimCode6, StimCode5, and StimCode4 are used to indicate
+                 \ that the stimulus for the Correct Arm 2 or Incorrect Arm
+                 \ is turned on.
+                 \ StimCode6 = Most Significant, StimCode4 = Least Significant.
+^StimCode4 = 28  \ 000 = No Stim Turned On
+^StimCode5 = 29  \ 001 = Arm 1 Stim On, 010 = Arm 2 Stim On
+^StimCode6 = 30  \ 011 = Arm 3 Stim On, 100 = Arm 4 Stim On
+^NosePoke1 = 31
+^NosePoke2 = 32
+^NosePoke3 = 33
+^NosePoke4 = 34
+^Reward    = 35
+^ITI       = 36
+                 \ IRCode4, IRCode3, IRCode2, and IRCode1 are all used to
+                 \ indicate which IR Beam was broken.
+                 \ IRCode4 = Most Significant, IRCode1 = Least Significant.
+^IRCode1   = 37  \ 0000 = No IR Beam Break
+^IRCode2   = 38  \ 0001 = Arm 1 IR Beam 1 Break, 0010 = Arm 2 IR Beam 1 Break
+^IRCode3   = 39  \ 0011 = Arm 3 IR Beam 1 Break, 0100 = Arm 4 IR Beam 1 Break
+^IRCode4   = 40  \ 0101 = Arm 1 IR Beam 2 Break, 0110 = Arm 2 IR Beam 2 Break
+                 \ 0111 = Arm 3 IR BEam 2 Break, 1000 = Arm 4 IR Beam 2 Break
+
+\conventional output card DIG-720
+\to doors control box
+^Door1Close = 41
+^Door2Close = 42
+^Door3Close = 43
+^Door4Close = 44
+
+\ A() = Control Variables with Assigned Aliases as Defined
+Var_Alias Number of Trials to Run                     = A(0)   \ Default = 20
+Var_Alias Trial Type (1=Visual  2=Olfactory  3=Both)  = A(1)   \ Default = 3-Both
+Var_Alias Correct Stimuli (1=Visual  2=Olfactory)     = A(2)   \ Default = 2-Olfactory
+Var_Alias Number of Correct Arms (1 or 2)             = A(3)   \ Default = 1
+Var_Alias Arm Selection (1=Random  2=Sequenced)       = A(4)   \ Default = 1-Random
+Var_Alias Stimuli Presentation Length (sec)           = A(5)   \ Default = 60 seconds
+Var_Alias Correct Odor (1=Odor1  2=Odor2)             = A(6)   \ Default = 1-Odor1
+Var_Alias Incorrect Odor (1=Odor1  2=Odor2)           = A(7)   \ Default = 2-Odor2
+Var_Alias Correct Color (1=Blue  2=Yellow  3=Green)   = A(8)   \ Default = 2-Yellow
+Var_Alias Incorrect Color (1=Blue  2=Yellow  3=Green) = A(9)   \ Default = 2-Yellow
+Var_Alias Minimum Inter-Trial Interval (sec)          = A(10)  \ Default = 15 seconds
+Var_Alias Maximum Inter-Trial Interval (sec)          = A(11)  \ Default = 45 seconds
+Var_Alias Allow Explorations (0=No  1=Yes)            = A(12)  \ Default = 1-Yes
+Var_Alias Maximum Stimuli Reaction Time (sec)         = A(13)  \ Default = 60 seconds
+Var_Alias Maximum Arm Response Time (sec)             = A(14)  \ Default = 60 seconds
+Var_Alias Delay to Reward (sec)                       = A(15)  \ Default = 0 seconds
+Var_Alias Reward Duration (sec)                       = A(16)  \ Default = 1 seconds
+Var_Alias Trial Succession (1=Automatic  2=Manual)    = A(17)  \ Default = 1-Automatic
+Var_Alias Maximum Trial Length (sec)                  = A(18)  \ Default = 1200 seconds
+Var_Alias Frequency (Hz)                  = A(26)  \ Default = 1000 Hz
+Var_Alias Amplitude (dB)                  = A(27)  \ Default = 100 dB
+Var_Alias Rise/Fall Time (ms)             = A(28)  \ Default = 10 ms
+Var_Alias Duration (ms)                   = A(29)  \ Default = 1000 ms
+Var_Alias Pulse Click Frequency (pulse/s) = A(30)  \ Default = 10 pulses/s
+
+^Trials           = 0
+^TrialType        = 1
+^CorrectStim      = 2
+^CorrectArms      = 3
+^ArmSelection     = 4
+^StimLength       = 5
+^Odor1            = 6
+^Odor2            = 7
+^CorrectColor     = 8
+^IncorrColor      = 9
+^MinITI           = 10
+^MaxITI           = 11
+^AllowExplore     = 12
+^MaxStimTime      = 13
+^MaxRespTime      = 14
+^DelayToRew       = 15
+^RewardDur        = 16
+^TrialSucc        = 17
+^MaxTrialLen      = 18
+^StimLengthTicks  = 19
+^ITITimer         = 20
+^MaxStimTimeTicks = 21
+^MaxRespTimeTicks = 22
+^DelayToRewTicks  = 23
+^RewardDurTicks   = 24
+^TrialTimer       = 25
+^Freq  = 26
+^Amp   = 27
+^RF    = 28
+^Dur   = 29
+^Click = 30
+
+
+\ List Data Variables Here
+\  B() = Totals Array
+\  B(0) = Total Trials Completed
+\  B(1) = Total Correct Arms
+\  B(2) = Total Incorrect Arms
+\  B(3) = Total Move Errors
+\  B(4) = Total Trials Incomplete
+
+\  D() = Trial by Trial Data Array
+\  D(I)   = Trial Number
+\  D(I+1) = Correct Arm 1 (1 - 2)
+\  D(I+2) = Correct Arm 2 (3 - 4)
+\#  D(I+3) = Incorrect Arm 1 (1 - 2)
+\  D(I+4)  = Arm Chosen (1 - 4, 0 = None)
+\  D(I+5) = Stimuli Reaction Time (sec)
+\  D(I+6) = Arm Response Time (sec)
+\  D(I+7) = Trial Outcome (1=Correct, 2=Choice Error, 3=Move Error, 4=Trial Incomplete)
+\  D(I+8) = Irrelevant Stim Combination 1  (1 - 2) 1: 1,2      2: 2,1
+\#  D(I+9) = Irrelevant Stim Combination 2  (1 - 2) 1: 1,2      2: 2,1
+\#  D(I+10) =  block type   (12=arms1-2, 21=2-1, 13=1-3, 31=3-1, 14=1-4, 41=4-1,23=2-3, 32=3-2, 24=2-4, 42=2-4, 34=3-4, 43=4-3)
+
+
+\ List Working Variables Here
+\  C = Current Arm
+\  E = Elapsed Time in Trial
+\  I = Index into Trial by Trial Data Array D
+\  J = Index into List X
+\  K = Index into List Y
+\  S = Session Time in Seconds
+\  T = Trial Counter
+\  X = List of correct/incorrect arm combination for part 1 of the maze
+\  F = List of correct/incorrect arm combination for part 2 of the maze
+\  Q = Temp Variable to hold the correct arm for part 1 and part 2 of the maze
+\  Y = variable used to hold value of correct arm (since the value at D(I+1) is deleted after z^correctArm is set, and we still need it for reward...)
+
+\  Z = List Used for Determining Irrelevant Stimulus Arms - there are two options 1-odor1 with the correct lighht or odor 2 with the correct light.
+\      The same rule holds for both parts of the maze.
+\  W = Value Drawn from List Z to determine the irrilevant stimulus combination for part 1 of the maze
+\  L = Value Drawn from List Z to determine the irrilevant stimulus combination for part 2 of the maze
+
+
+LIST X = 1,2
+LIST F = 3,4
+
+
+LIST Z = 1,2
+
+DIM A = 30
+DIM B = 4
+DIM D = 5000
+
+
+\ K-Pulses Used in this Program (K is sent from within the macro code)
+\  K1 = Used to Start Next Trial when Manual Trial Succession is Selected
+\  K2 = signals that the close doors macro was played
+
+
+\ Z-Pulses Used in this Program
+^ITIStart        = 1   \ Signal Start of ITI
+^ITIEnd          = 2   \ Signal End of ITI
+^IncompleteTrial = 3   \ Signal Incomplete Trial\End of Trial
+^StartTrial      = 4   \ Signal Start of Trial
+^EndTrial        = 5   \ Signal End of Trial
+^ArmEntry        = 6   \ Signal Animals Entrance into Arm
+^ArmCompleted    = 7   \ Signal that an End Beam has been Broken
+^TTLStimOff      = 8   \ Signal that the Stimulus has been Turned Off
+^TTLReward       = 9   \ Signal that a Reward has been Dispensed
+^EndReward       = 10  \ Signal that the Reward Delivery has finished
+^NosePoke       = 11  \ Signal that a NP was made
+^Bip             = 12
+^NosePokeArm1       = 13  \ Signal that a NP was made
+^NosePokeArm2       = 14  \ Signal that a NP was made
+^NosePokeArm3       = 15  \ Signal that a NP was made
+^NosePokeArm4       = 16  \ Signal that a NP was made
+^End             = 32  \ Signal End of Session
+
+
+DISKCOLUMNS = 8
+
+
+\***************************************************
+\               Odor Maze_v2 Schedule
+\  S1 - Set Default Values
+\      Number of Trials to Run        (8)
+\      Trial Type                     (3-both)
+\      Correct Stimuli                (2-Olfactory)
+\      Number of Correct Arms         (1)
+\      Arm Selection                  (1-Random)
+\      Odor Presentation Length       (60 seconds)
+\      Correct Odor                   (1-Odor1)
+\      Incorrect Odor                 (2-Odor2)
+\      Correct Color                  (2-Yellow)
+\      Incorrect Color                (3-Green)
+\      Minimum Inter-Trial Interval   (30 seconds)
+\      Maximum Inter-Trial Interval   (30 seconds)
+\      Allow Explorations             (1-Yes)
+\      M8  (60 seconds)
+\      Maximum Arm Response Time      (60 seconds)
+\      Delay to Reward                (0 seconds)
+\      Reward Duration                (2 seconds)
+\      Trial Succession               (1-Automatic)
+\      Maximum Trial Length           (120 seconds)
+\***************************************************
+S.S.1,
+S1,
+  0.001": SET A(^Trials)       = 150, A(^TrialType)    = 3,  A(^CorrectStim)  = 1;
+          SET A(^CorrectArms)  = 1,  A(^ArmSelection) = 1,  A(^StimLength)   = 14 ;
+          SET A(^Odor1      )  = 1,  A(^Odor2)        = 2,  A(^CorrectColor) = 2;
+          SET A(^IncorrColor)  = 3,  A(^MinITI)       = 0, A(^MaxITI)       = 0;
+          SET A(^AllowExplore) = 1,  A(^MaxStimTime)  = 9, A(^MaxRespTime)  = 9;
+          SET A(^DelayToRew)   = 0,  A(^RewardDur)    = 1,  A(^TrialSucc)    = 2;
+          SET A(^MaxTrialLen)  = 20;
+          SET A(^Freq) = 1000, A(^Amp)   = 100, A(^RF)   = 10;
+          SET A(^Dur)  = 3000, A(^Click) = 100;
+          \close all doors before starting the experiment:
+          ON ^Door1Close;
+          ON ^Door2Close;
+          ON ^Door3Close;
+          ON ^Door4Close ---> S2
+
+S2,     \ Wait for START command.
+        \ Display values for the Session Variables
+  #START: CLEAR 1,60; SET D(I) = -987.987;
+          SET A(^StimLengthTicks)  = A(^StimLength)  * 1";
+          SET A(^MaxStimTimeTicks) = A(^MaxStimTime) * 1";
+          SET A(^MaxRespTimeTicks) = A(^MaxRespTime) * 1";
+          ~SetRack(MG, 1);~;                 \ The ANL-926 cards are in Rack 1
+          ~InitANL926;~;                     \ Reset ANL-926
+          ~SetFreq(MG, BOX, A[26]);~;         \ Initialize Frequency
+          ~SetAmp(MG, BOX, A[27]);~;          \ Initialize Amplitude
+          ~SetRF(MG, BOX, A[28]);~;           \ Initialize Rise\Fall Time
+          ~SetDur(MG, BOX, A[29]);~;          \ Initialize Duration
+          ~SetClickFreq(MG, BOX, A[30]);~;
+ \         Z^ITIStart ---> S3
+
+  \1":
+      SHOW 1,# Trial,A(^Trials),               2,Trial Type,A(^TrialType),       3,Correct Stim,A(^CorrectStim);
+      SHOW 4,# Correct Arms,A(^CorrectArms),   5,Arm Selection,A(^ArmSelection), 6,Stim Length,A(^StimLength);
+      SHOW 7,Odor1, A(^Odor1),                 8,Odor2,A(^Odor2),                9,Correct Color,A(^CorrectColor);
+      SHOW 10,Incorrect Color,A(^IncorrColor), 11,Min ITI,A(^MinITI),            12,Max ITI,A(^MaxITI);
+      SHOW 13,Allow Explore,A(^AllowExplore),  14,Max Stim Time,A(^MaxStimTime), 15,Max Resp Time,A(^MaxRespTime);
+      SHOW 16,Delay to Reward,A(^DelayToRew),  17,Reward Dur,A(^RewardDur),      18,Trial Succession,A(^TrialSucc);
+   \   SHOW 19,Max Trial Len,A(^MaxTrialLen) ---> SX                         uu
+       SHOW 19,Max Trial Len,A(^MaxTrialLen) ;
+       Z^ITIStart ---> S3
+
+
+
+S3,     \ Wait for end of ITI and issue ALERTON to
+        \ signal for the Doors to be opened.
+        \
+        \ Select the Arms to be used in this Trial.
+        \ Check if there is two correct arms or only one
+        \ correct arm.
+        \
+        \ RANDI W = Z is used to Randomize the Irrelevant
+        \ Stimulus presentation so that we don't always
+        \ present the same two stimuli together.
+  #Z^ITIEnd:  ADD T;
+             SET D(I) = T, D(I+11) = -987.987;
+             \ for each part of the maze select the correct and incorrect arms.
+             \ we have 6 arm pairs, and we want that every 24 trials
+             \all arm-pairs will participate 4 times, with each pair appearing twice
+             \as correct-incorrect and twice as incorrect-correct
+            RANDI Q = X;
+            SET D(I+1) = Q;
+            RANDI Q = F;
+            SET D(I+2) = Q;
+            RANDI W = Z;
+            SET D(I+8) = W ; --->S4
+            \RANDI L = Z;
+            \SET D(I+9) = L; --->S4
+
+S4,
+  0.01": Z^StartTrial ---> S9
+
+S9,   \wait 1.5 sec for the odor to arrive to nose pokes.
+        \then issue alerton that signals the start of trial.
+        \1.5": ALERTON; Z^Bip ---> S5
+        1.5": SET A(^Freq) = 800; SET A(^Dur) = 500;  Z^Bip;                \ Reset Dur to 500 msec
+       ~OnDur(MG, BOX, A[29]);~ ;  ---> S5
+
+\S10,  \the alerton will last 3 sec:
+\        3": ALERTOFF ; ---> S5
+
+S5,     \ Wait for Animal to break Entrance Beam.
+        \ If Animal does not break an Entrance Beam
+        \ record Move Error.
+        \
+        \ With only one Entrance Beam it is unfortunately
+        \ possible for the Animal to get to the End Beam
+        \ without breaking the Entrance Beam.  Need to
+        \ check for End Beam breaks.
+  #R^Arm1_A: SET C = 1, D(I+5) = E + 0.01; Z^ArmEntry ---> S6
+  #R^Arm2_A: SET C = 2, D(I+5) = E + 0.01; Z^ArmEntry ---> S6
+  #R^Arm3_A: SET C = 3, D(I+5) = E + 0.01; Z^ArmEntry ---> S6
+  #R^Arm4_A: SET C = 4, D(I+5) = E + 0.01; Z^ArmEntry ---> S6
+  #R^Arm1_B: ADD B(0); SET D(I+4) = 1, D(I+5) = E + 0.01, D(I+6) = E + 0.01; Z^ArmEntry; Z^ArmCompleted ---> S7
+  #R^Arm2_B: ADD B(0); SET D(I+4) = 2, D(I+5) = E + 0.01, D(I+6) = E + 0.01; Z^ArmEntry; Z^ArmCompleted ---> S7
+  #R^Arm3_B: ADD B(0); SET D(I+4) = 3, D(I+5) = E + 0.01, D(I+6) = E + 0.01; Z^ArmEntry; Z^ArmCompleted ---> S7
+  #R^Arm4_B: ADD B(0); SET D(I+4) = 4, D(I+5) = E + 0.01, D(I+6) = E + 0.01; Z^ArmEntry; Z^ArmCompleted ---> S7
+  A(^MaxStimTimeTicks)#T: ADD B(3); SET D(I+5) = 0, D(I+7) = 3; Z^IncompleteTrial ---> S7
+  #Z^EndTrial:            ADD B(3); SET D(I+5) = 0, D(I+7) = 3;  ---> S8
+
+S6,     \ Wait for Animal to break End Beam.
+        \ If Animal does not break the End Beam
+        \ record Trial Incomplete.
+        \
+        \ If Allow Explorations is set to yes,
+        \ then reset the timer when the Animal
+        \ enters a new arm.
+  #R^Arm1_A: IF (C <> 1) AND (A(^AllowExplore) = 1) [SET C = 1, D(I+5) = E + 0.01] ---> S6
+  #R^Arm2_A: IF (C <> 2) AND (A(^AllowExplore) = 1) [SET C = 2, D(I+5) = E + 0.01] ---> S6
+  #R^Arm3_A: IF (C <> 3) AND (A(^AllowExplore) = 1) [SET C = 3, D(I+5) = E + 0.01] ---> S6
+  #R^Arm4_A: IF (C <> 4) AND (A(^AllowExplore) = 1) [SET C = 4, D(I+5) = E + 0.01] ---> S6
+  #R^Arm1_B: ADD B(0); SET D(I+4) = 1, D(I+6) = E + 0.01; Z^ArmCompleted ---> S7
+  #R^Arm2_B: ADD B(0); SET D(I+4) = 2, D(I+6) = E + 0.01; Z^ArmCompleted ---> S7
+  #R^Arm3_B: ADD B(0); SET D(I+4) = 3, D(I+6) = E + 0.01; Z^ArmCompleted ---> S7
+  #R^Arm4_B: ADD B(0); SET D(I+4) = 4, D(I+6) = E + 0.01; Z^ArmCompleted ---> S7
+  A(^MaxRespTimeTicks)#T: ADD B(4); SET D(I+6) = 0, D(I+7) = 4; Z^IncompleteTrial ---> S7
+  #Z^EndTrial:            ADD B(4); SET D(I+6) = 0, D(I+7) = 4;  ---> S8
+
+S7,     \ Issue Alert to signal the End of Trial
+        \ and to close the Doors.
+  #Z^EndTrial ! #Z^EndReward:   SET A(^Dur) = 1000;
+                               ~PulseClick(MG, BOX, A[30]);~ ; ---> S8
+
+
+
+S8,     \ Wait 0.5 seconds (for the ALERTON)
+        \ issue ALERTOFF.
+  \0.05":  ALERTOFF; SET I = I + 10;
+  0.01":   SET I = I + 10;
+      IF A(^TrialSucc) = 1 [@Automatic, @Manual]
+         @Automatic: Z^ITIStart ---> S3
+         @Manual: ---> S3
+
+
+\***************************************************
+\                    ITI CONTROL
+\***************************************************
+S.S.2,
+S1,     \ Select a Random number between the Min and Max ITI
+        \ values that were provided.
+        \ A(^MinITI)   = A[10]
+        \ A(^MaxITI)   = A[11]
+        \ A(^ITITimer) = A[20]
+  #Z^ITIStart: ~A[20] := RandomNumber(MG, A[10], A[11]);~ ---> S2
+
+S2,     \ Time Variable ITI
+  0.01": SET A(^ITITimer) = A(^ITITimer) - 0.01;
+         SHOW 2,ITI Time,A(^ITITimer);
+         IF A(^ITITimer) <= 0 [@DoneITI, @Cont]
+            @Done: Z^ITIEnd ---> S1
+            @Cont: ---> S2
+
+
+\***************************************************
+\              MAX TRIAL LENGTH TIMER
+\***************************************************
+S.S.3,
+S1,
+  #Z^StartTrial: SET A(^TrialTimer) = A(^MaxTrialLen), E = 0 ---> S2
+
+S2,     \ Time the Trial Length
+        \ Check if Max Trials has been Reached
+        \ Check if Automatic or Manual Trial Succession
+        \
+        \ Trial could end early because of Arm Completion
+        \ or Movement Failures
+  0.01": SET E = E + 0.01;
+         SET A(^TrialTimer) = A(^TrialTimer) - 0.01;
+         SHOW 2,Trial Time,A(^TrialTimer);
+         IF A(^TrialTimer) <= 0 [@TrialEnd, @Cont]
+            @TrialEnd: IF T >= A(^Trials) [@Done, @Cont]
+                          @Done: Z^End ---> S1
+                          @Cont: IF A(^TrialSucc) = 1 [@Automatic, @Manual]
+                                    @Automatic: Z^EndTrial ---> S1
+                                    @Manual: SHOW 5,Awaiting K1,1;
+                                             Z^EndTrial ---> S4
+            @Cont: ---> S2
+ #Z^IncompleteTrial ! #Z^ArmCompleted: IF T >= A(^Trials) [@Done, @Cont]
+                                           @Done: Z^End ---> S1
+                                           @Cont: IF A(^TrialSucc) = 1 [@Automatic, @Manual]
+                                                     @Automatic: ---> S3
+                                                     @Manual: SHOW 5,Awaiting K1,1;
+                                                              Z^EndTrial ---> S4
+
+\S3,     \ Wait for the Reward Delivery to Finish
+\ #Z^EndReward: ---> S1
+
+S4,     \ Manual Trial Succession
+        \ Wait for K1 pulse to begin next ITI
+  #K1: CLEAR 5,5; Z^ITIStart ---> S1
+
+
+
+
+\***************************************************
+\          ARM 1 RELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.4,
+S1,     \ Check if this is the Correct Arm or Incorrect Arm.
+    #Z^StartTrial: IF D(I+1) = 1 [@Correct, @Incorrect]
+                    @Correct: ---> S2
+                    @Incorrect: ---> S3
+
+S2,     \ Arm 1 Relevant Correct Stim
+    0.01":     ON ^Arm1_Green, ^Arm1_Blue; ---> S4
+
+S3,     \ Arm 1 Relevant Incorrect Stim
+    0.01":   ON ^Arm1_Yellow ---> S4
+
+S4,     \ Turn off the stimuli when the Maximum Stimuli
+        \ Reaction Time has been reached or the Animal
+        \ enters the Arm, whichever comes first.
+ A(^StimLengthTicks)#T: OFF ^Arm1_Blue,  ^Arm1_Yellow, ^Arm1_Green;
+                         OFF ^Arm1_Odor1, ^Arm1_Odor2; Z^TTLStimOff ---> S1
+  #Z^ArmEntry: OFF ^Arm1_Blue,  ^Arm1_Yellow, ^Arm1_Green;
+               OFF ^Arm1_Odor1, ^Arm1_Odor2; Z^TTLStimOff ---> S1
+
+
+\***************************************************
+\         ARM 1 IRRELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.5,
+S1,
+  #Z^StartTrial: ---> S2
+
+S2,     \ Arm 1 Irrelevant Correct Stim
+  0.01": IF D(I+8) = 1 [@option1, @option2]
+                       @option1: IF D(I+1) = 1 [@Odor1, @Odor2]
+                               @Odor1: ON ^Arm1_Odor1 ---> S1
+                               @Odor2: ON ^Arm1_Odor2  ---> S1
+                       @option2: IF D(I+1) = 1 [@Odor2, @Odor1]
+                               @Odor2: ON ^Arm1_Odor2  ---> S1
+                               @Odor1: ON ^Arm1_Odor1 ---> S1
+
+
+\***************************************************
+\          ARM 2 RELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.6,
+S1,     \ Check if this is the Correct Arm or Incorrect Arm.
+    #Z^StartTrial: IF D(I+1) = 2 [@Correct, @Incorrect]
+                    @Correct: ---> S2
+                    @Incorrect: ---> S3
+
+S2,     \ Arm 2 Relevant Correct Stim
+    0.01":     ON ^Arm2_Green, ^Arm2_Blue; ---> S4
+
+S3,     \ Arm 2 Relevant Incorrect Stim
+    0.01":   ON ^Arm2_Yellow ---> S4
+
+S4,     \ Turn off the stimuli when the Maximum Stimuli
+        \ Reaction Time has been reached or the Animal
+        \ enters the Arm, whichever comes first.
+ A(^StimLengthTicks)#T: OFF ^Arm2_Blue,  ^Arm2_Yellow, ^Arm2_Green;
+                         OFF ^Arm2_Odor1, ^Arm2_Odor2; Z^TTLStimOff ---> S1
+  #Z^ArmEntry: OFF ^Arm2_Blue,  ^Arm2_Yellow, ^Arm2_Green;
+               OFF ^Arm2_Odor1, ^Arm2_Odor2; Z^TTLStimOff ---> S1
+
+
+\***************************************************
+\         ARM 2 IRRELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.7,
+S1,
+  #Z^StartTrial: ---> S2
+
+S2,     \ Arm 1 Irrelevant Correct Stim
+  0.01": IF D(I+8) = 1 [@option1, @option2]
+                       @option1: IF D(I+1) = 2 [@Odor1, @Odor2]
+                               @Odor1: ON ^Arm2_Odor1 ---> S1
+                               @Odor2: ON ^Arm2_Odor2  ---> S1
+                       @option2: IF D(I+1) = 2 [@Odor2, @Odor1]
+                               @Odor2: ON ^Arm2_Odor2  ---> S1
+                               @Odor1: ON ^Arm2_Odor1 ---> S1
+
+
+
+\***************************************************
+\          ARM 3 RELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.8,
+S1,     \ Check if this is the Correct Arm or Incorrect Arm.
+    #Z^StartTrial: IF D(I+2) = 3 [@Correct, @Incorrect]
+                    @Correct: ---> S2
+                    @Incorrect: ---> S3
+
+S2,     \ Arm 3 Relevant Correct Stim
+    0.01":     ON ^Arm3_Green, ^Arm3_Blue; ---> S4
+
+S3,     \ Arm 3 Relevant Incorrect Stim
+    0.01":   ON ^Arm3_Yellow ---> S4
+
+S4,     \ Turn off the stimuli when the Maximum Stimuli
+        \ Reaction Time has been reached or the Animal
+        \ enters the Arm, whichever comes first.
+ A(^StimLengthTicks)#T: OFF ^Arm3_Blue,  ^Arm3_Yellow, ^Arm3_Green;
+                         OFF ^Arm3_Odor1, ^Arm3_Odor2; Z^TTLStimOff ---> S1
+  #Z^ArmEntry: OFF ^Arm3_Blue,  ^Arm3_Yellow, ^Arm3_Green;
+               OFF ^Arm3_Odor1, ^Arm3_Odor2; Z^TTLStimOff ---> S1
+
+\***************************************************
+\         ARM 3 IRRELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.9,
+S1,
+  #Z^StartTrial: ---> S2
+
+S2,     \ Arm 1 Irrelevant Correct Stim
+  0.01": IF D(I+8) = 1 [@option1, @option2]
+                       @option1: IF D(I+2) = 3 [@Odor1, @Odor2]
+                               @Odor1: ON ^Arm3_Odor1 ---> S1
+                               @Odor2: ON ^Arm3_Odor2 ---> S1
+                       @option2: IF D(I+2) = 3 [@Odor2, @Odor1]
+                               @Odor2: ON ^Arm3_Odor2 ---> S1
+                               @Odor1: ON ^Arm3_Odor1 ---> S1
+
+
+\***************************************************
+\          ARM 4 RELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.10,
+S1,     \ Check if this is the Correct Arm or Incorrect Arm.
+    #Z^StartTrial: IF D(I+2) = 4 [@Correct, @Incorrect]
+                    @Correct: ---> S2
+                    @Incorrect: ---> S3
+
+S2,     \ Arm 4 Relevant Correct Stim
+    0.01":     ON ^Arm4_Green, ^Arm4_Blue; ---> S4
+
+S3,     \ Arm 4 Relevant Incorrect Stim
+    0.01":   ON ^Arm4_Yellow ---> S4
+
+S4,     \ Turn off the stimuli when the Maximum Stimuli
+        \ Reaction Time has been reached or the Animal
+        \ enters the Arm, whichever comes first.
+ A(^StimLengthTicks)#T: OFF ^Arm4_Blue,  ^Arm4_Yellow, ^Arm4_Green;
+                         OFF ^Arm4_Odor1, ^Arm4_Odor2; Z^TTLStimOff ---> S1
+  #Z^ArmEntry: OFF ^Arm4_Blue,  ^Arm4_Yellow, ^Arm4_Green;
+               OFF ^Arm4_Odor1, ^Arm4_Odor2; Z^TTLStimOff ---> S1
+
+
+\***************************************************
+\         ARM 4 IRRELEVANT STIMULUS CONTROL
+\***************************************************
+S.S.11,
+S1,
+  #Z^StartTrial: ---> S2
+
+S2,     \ Arm 1 Irrelevant Correct Stim
+  0.01": IF D(I+8) = 1 [@option1, @option2]
+                       @option1: IF D(I+2) = 4 [@Odor1, @Odor2]
+                               @Odor1: ON ^Arm4_Odor1 ---> S1
+                               @Odor2: ON ^Arm4_Odor2  ---> S1
+                       @option2: IF D(I+2) = 4 [@Odor2, @Odor1]
+                               @Odor2: ON ^Arm4_Odor2  ---> S1
+                               @Odor1: ON ^Arm4_Odor1 ---> S1
+
+\***************************************************
+\                  REWARD CONTROL
+\***************************************************
+S.S.12,
+S1,
+  #START: SET A(^DelayToRewTicks) = A(^DelayToRew) * 1";
+          SET A(^RewardDurTicks)  = A(^RewardDur)  * 1"   ---> S2
+
+S2,
+    #Z^StartTrial:--->S3
+
+S3,     \ Wait for signal that the bip was played.
+
+  #Z^Bip :  SHOW 50,GOT A BIP!!,T;' ---> S4
+
+S4,     \ Wait for signal that the Animal has made a nose poke.
+        \ if NP didn't occur, wait for signal that trial has ended.
+
+  #Z^NosePoke : SHOW 55,GOT A NP!!,D(I+1)---> S5
+  #Z^EndTrial: ---> S2
+
+S5,     \ Wait for signal that the Animal has reached
+        \ the end of the Arm.  Check if the Animal
+        \ has chosen the correct or incorrect Arm.
+  #Z^ArmCompleted:  IF (D(I+1) = D(I+4)) OR (D(I+2) = D(I+4)) [@CorrectArm, @IncorrectArm]
+                      @CorrectArm:   ADD B(1); SET D(I+7) = 1; SET Y = D(I+4); ---> S6
+                      @IncorrectArm: ADD B(2); SET D(I+7) = 2 ---> S2
+  #Z^EndTrial: ---> S2
+
+
+S6,     \ Time the Delay to the Reward
+  A(^DelayToRewTicks)#T: Z^TTLReward; SHOW 65,D(I+1),D(I+1);    SHOW 70 ,Y,Y;
+                            IF Y = 1 [@Reward1, @Next]
+                            @Reward1: ON ^Arm1_Reward ---> S7
+                            @Next: IF Y = 2 [@Reward2, @Next]
+                                      @Reward2:  ON ^Arm2_Reward ---> S7
+                                      @Next: IF Y = 3 [@Reward3, @Next]
+                                                @Reward3:  ON ^Arm3_Reward ---> S7
+                                                @Next: IF Y = 4 [@Reward4, @Next]
+                                                         @Reward4:  ON ^Arm4_Reward ---> S7
+                                                         @Next:   ---> S7
+
+
+S7,     \ Time the Reward Duration
+  A(^RewardDurTicks)#T: OFF ^Arm1_Reward, ^Arm2_Reward;
+                        OFF ^Arm3_Reward, ^Arm4_Reward;
+                        ---> S2
+
+
+
+\***************************************************
+\                  UPDATE DISPLAY
+\***************************************************
+S.S.13,
+S1,
+  #START: ---> S2
+
+\S2,
+ \ 1": SHOW 3,Trial #,T,                  6,Correct Arm 1,D(I+1),     7,Correct Arm 2,D(I+8);
+ \     SHOW 8,Incorrect Arm,D(I+3),       9,Reaction Time,D(I+5),     10,Response Time,D(I+6);
+ \     SHOW 11,Arm Chosen,D(I+4),         12,Trial Result,D(I+7),     16,Tot Trials Completed,B(0);
+ \     SHOW 17,Tot Correct Arms,B(1),     18,Tot Incorrect Arms,B(2), 19,Tot Move Errors,B(3);
+ \     SHOW 20,Tot Trials Incomplete,B(4) ---> SX
+
+
+ S2,
+  1": SHOW 28,Trial #,T,                  31,Correct Arm 1,D(I+1),     32,Correct Arm 2,D(I+2);
+      SHOW 33,Incorrect Arm,D(I+3),       34,Reaction Time,D(I+5),     35,Response Time,D(I+6);
+      SHOW 36,Arm Chosen,D(I+4),         37,Trial Result,D(I+7),     41,Tot Trials Completed,B(0);
+      SHOW 42,Tot Correct Arms,B(1),     43,Tot Incorrect Arms,B(2), 44,Tot Move Errors,B(3);
+      SHOW 45,Tot Trials Incomplete,B(4) ---> SX
+
+
+
+
+\***************************************************
+\           TTL OUTPUT FOR CORRECT ARM 1
+\***************************************************
+S.S.14,  \ StimCode3 = Most Significant Bit
+         \ StimCode2 = Middle Bit
+         \ StimCode1 = Least Significant Bit
+S1,      \ Wait for Signal that the Trial is Starting
+         \ When the Trial Starts the Stimulus is turned on.
+  #Z^StartTrial: ---> S2
+
+S2,      \ Check which Arm is Correct Arm 1
+  0.01": IF D(I+1) = 1 [@Arm1, @Next]
+            @Arm1: ON ^StimCode1 ---> S3
+            @Next: IF D(I+1) = 2 [@Arm2, @Next]
+                      @Arm2: ON ^StimCode2 ---> S3
+                      @Next: IF D(I+1) = 3 [@Arm3, @Arm4]
+                                @Arm3: ON ^StimCode2, ^StimCode1 ---> S3
+                                @Arm4: ON ^StimCode3 ---> S3
+
+S3,     \ Wait for the Signal that the Stimulus
+        \ is being Turned off.
+  #Z^TTLStimOff: OFF ^StimCode3, ^StimCode2, ^StimCode1 ---> S1
+
+
+\***************************************************
+\    TTL OUTPUT FOR CORRECT ARM 2/INCORRECT ARM
+\***************************************************
+S.S.15,  \ StimCode6 = Most Significant Bit
+         \ StimCode5 = Middle Bit
+         \ StimCode4 = Least Significant Bit
+S1,      \ Wait for Signal that the Trial is Starting
+         \ When the Trial Starts the Stimulus is turned on.
+  #Z^StartTrial: ---> S2
+
+S2,      \ Check which Arm is Correct Arm 2/Incorrect Arm
+  0.01": IF (D(I+2) = 1) [@Arm1, @Next]
+            @Arm1: ON ^StimCode4 ---> S3
+            @Next: IF (D(I+2) = 2) [@Arm2, @Next]
+                      @Arm2: ON ^StimCode5 ---> S3
+                      @Next: IF (D(I+2) = 3) [@Arm3, @Arm4]
+                                @Arm3: ON ^StimCode5, ^StimCode4 ---> S3
+                                @Arm4: ON ^StimCode6 ---> S3
+
+S3,     \ Wait for the Signal that the Stimulus
+        \ is being Turned off.
+  #Z^TTLStimOff: OFF ^StimCode6, ^StimCode5, ^StimCode4 ---> S1
+
+
+
+\***************************************************
+\              TTL OUTPUT FOR NOSEPOKE
+\***************************************************
+S.S.16,
+S1,
+  #START: ---> S2
+
+S2,     \ Wait for a NosePoke to Happen
+        \ Turn on Appropriate TTL Output
+  #R^Arm1_NP: ON ^NosePoke1; Z^NosePoke;  Z^NosePokeArm1 ---> S3
+  #R^Arm2_NP: ON ^NosePoke2; Z^NosePoke;  Z^NosePokeArm2  ---> S3
+  #R^Arm3_NP: ON ^NosePoke3; Z^NosePoke; Z^NosePokeArm3  ---> S3
+  #R^Arm4_NP: ON ^NosePoke4; Z^NosePoke;  Z^NosePokeArm4  ---> S3
+
+S3,     \ Turn off Output after 10ms
+  1": OFF ^NosePoke4, ^NosePoke3;
+         OFF ^NosePoke2, ^NosePoke1;  ---> S2
+
+\***************************************************
+\               TTL OUTPUT FOR REWARD
+\***************************************************
+S.S.17,
+S1,     \ Wait for Signal that Reward is being Dispensed
+  #Z^TTLReward: ON ^Reward ---> S2
+
+S2,     \ Turn off Output at the end of the Reward Duration
+  A(^RewardDurTicks)#T: OFF ^Reward ---> S1
+
+
+\***************************************************
+\                TTL OUTPUT FOR ITI
+\***************************************************
+S.S.18,
+S1,     \ Wait for Signal that ITI is Starting
+  #Z^ITIStart: ON ^ITI ---> S2
+
+S2,     \ Wait for Signal that ITI is Ending
+  #Z^ITIEnd: OFF ^ITI ---> S1
+
+
+\***************************************************
+\              TTL OUTPUT FOR IR BEAMS
+\***************************************************
+S.S.19, \ IRCode4 = Most Significant Bit
+        \ IRCode3 = Middle Bit 3
+        \ IRCode2 = Middle Bit 2
+        \ IRCode1 = Least Significant Bit
+S1,
+  #START: ---> S2
+
+S2,     \ Wait for IR Beam Break
+        \ Turn on Appropriate Coded Output
+  #R^Arm1_A: ON ^IRCode1 ---> S3
+  #R^Arm2_A: ON ^IRCode2 ---> S3
+  #R^Arm3_A: ON ^IRCode2, ^IRCode1 ---> S3
+  #R^Arm4_A: ON ^IRCode3 ---> S3
+  #R^Arm1_B: ON ^IRCode3, ^IRCode1 ---> S3
+  #R^Arm2_B: ON ^IRCode3, ^IRCode2 ---> S3
+  #R^Arm3_B: ON ^IRCode3, ^IRCode2, ^IRCode1 ---> S3
+  #R^Arm4_B: ON ^IRCode4 ---> S3
+
+S3,     \ Turn off Coded Output after 10ms
+  0.01": OFF ^IRCode4, ^IRCode3;
+         OFF ^IRCode2, ^IRCode1 ---> S2
+
+\***************************************************
+\          OPEN DOOR CONTROL
+\***************************************************
+S.S.21,
+S1,
+ #Z^StartTrial: ---> S2
+
+S2,     \ wait for the bip, and then count 1 sec before opening the door
+ #Z^Bip:   ---> S3
+ #Z^EndTrial: ---> S1
+
+S3,     \ Wait for signal that the Animal has made a nose poke in this arm.
+ \check which door is the mate-door in this trial:
+ #Z^NosePokeArm1:  OFF ^Door2Close; OFF ^Door1Close ---> S4
+ #Z^NosePokeArm2:  OFF ^Door2Close; OFF ^Door1Close ---> S4
+ #Z^NosePokeArm3:  OFF ^Door3Close; OFF ^Door4Close ---> S4
+ #Z^NosePokeArm4:  OFF ^Door3Close; OFF ^Door4Close ---> S4
+
+ #Z^EndTrial: ---> S1
+
+ S4,
+ #Z^EndTrial: ---> S1
+
+\***************************************************
+\          DOOR CLOSE CONTROL
+\***************************************************
+S.S.24,
+S1,     \ wait for a K2 pulse signaling that the "CloseDoors" macro was played
+ #K2:  ---> S2
+
+S2,     \ wait for a signal that A-beam of arm1 was crossed:
+\ #R^Arm1_A:  OFF ^Door1Close; OFF ^Door2Close; OFF ^Door3Close; OFF ^Door4Close; ---> S1
+\ #R^Arm2_A:  OFF ^Door1Close; OFF ^Door2Close; OFF ^Door3Close; OFF ^Door4Close; ---> S1
+\ #R^Arm3_A:  OFF ^Door1Close; OFF ^Door2Close; OFF ^Door3Close; OFF ^Door4Close; ---> S1
+\ #R^Arm4_A:  OFF ^Door1Close; OFF ^Door2Close; OFF ^Door3Close; OFF ^Door4Close; ---> S1
+ \ if no K-pulse has arrived, then wait for end of trial and move back to S1:
+ #Z^EndTrial: ---> S1
+
+
+\S3,     \ Wait 1 sec and then try again to close the door
+
+ \1" : ON ^Door1Close; ---> S2
+
+
+\***************************************************
+\                   SESSION CLOCK
+\***************************************************
+S.S.32,
+S1,
+  #START: SHOW 1,Session,S/60 ---> S2
+
+S2,
+  0.01": SET S = S + 0.01; SHOW 1,Session,S/60 ---> S2
+  #Z^End: ---> S3
+
+S3,     \ Wait for Screen Update and end with
+        \ STOPABORTFLUSH for Automatic Data Saving
+  2": ---> STOPABORTFLUSH
+
+
+
+
